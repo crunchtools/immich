@@ -1,0 +1,13 @@
+[Unit]
+Description=Initialize Immich Database
+After=postgresql.service
+Requires=postgresql.service
+Before=immich-server.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/init-immich-db.sh
+
+[Install]
+WantedBy=multi-user.target

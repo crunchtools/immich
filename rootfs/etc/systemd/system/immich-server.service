@@ -1,0 +1,16 @@
+[Unit]
+Description=Immich Server
+After=network.target postgresql.service valkey.service immich-db-init.service
+Requires=postgresql.service valkey.service immich-db-init.service
+
+[Service]
+Type=simple
+User=immich
+WorkingDirectory=/usr/src/app/server
+EnvironmentFile=/etc/immich.env
+ExecStart=/usr/bin/node dist/main
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
