@@ -5,37 +5,51 @@
 # Extract Immich application from official image
 FROM ghcr.io/immich-app/immich-server:release AS immich-source
 
-# Build libvips from source (not available in UBI repos)
+# Build libvips from source — librsvg2-devel requires RHSM
 FROM registry.access.redhat.com/ubi10/ubi-init:latest AS vips-build
-RUN dnf install -y \
+RUN --mount=type=secret,id=RHSM_ACTIVATION_KEY \
+    --mount=type=secret,id=RHSM_ORG_ID \
+    subscription-manager register \
+      --activationkey="$(cat /run/secrets/RHSM_ACTIVATION_KEY)" \
+      --org="$(cat /run/secrets/RHSM_ORG_ID)" \
+    && dnf install -y \
     gcc gcc-c++ make wget xz \
     meson ninja-build pkg-config \
     glib2-devel expat-devel \
     libjpeg-turbo-devel libpng-devel \
     libtiff-devel libwebp-devel \
     libexif-devel lcms2-devel \
-    librsvg2-devel && \
-    cd /tmp && \
-    wget https://github.com/libvips/libvips/releases/download/v8.15.2/vips-8.15.2.tar.xz && \
-    tar xf vips-8.15.2.tar.xz && \
-    cd vips-8.15.2 && \
-    meson setup build --prefix=/usr/local --buildtype=release && \
-    cd build && \
-    ninja && \
-    ninja install
+    librsvg2-devel \
+    && dnf clean all \
+    && subscription-manager unregister \
+    && cd /tmp \
+    && wget https://github.com/libvips/libvips/releases/download/v8.15.2/vips-8.15.2.tar.xz \
+    && tar xf vips-8.15.2.tar.xz \
+    && cd vips-8.15.2 \
+    && meson setup build --prefix=/usr/local --buildtype=release \
+    && cd build \
+    && ninja \
+    && ninja install
 
-# Build pgvector 0.7.4 from source (EPEL has 0.6.2, Immich needs 0.7.4)
+# Build pgvector 0.7.4 from source — postgresql-server-devel requires RHSM
 FROM registry.access.redhat.com/ubi10/ubi-init:latest AS pgvector-build
-RUN dnf install -y \
+RUN --mount=type=secret,id=RHSM_ACTIVATION_KEY \
+    --mount=type=secret,id=RHSM_ORG_ID \
+    subscription-manager register \
+      --activationkey="$(cat /run/secrets/RHSM_ACTIVATION_KEY)" \
+      --org="$(cat /run/secrets/RHSM_ORG_ID)" \
+    && dnf install -y \
     gcc gcc-c++ make wget \
     redhat-rpm-config \
-    postgresql-server-devel && \
-    cd /tmp && \
-    wget https://github.com/pgvector/pgvector/archive/refs/tags/v0.7.4.tar.gz && \
-    tar xf v0.7.4.tar.gz && \
-    cd pgvector-0.7.4 && \
-    make && \
-    make install DESTDIR=/pgvector-install
+    postgresql-server-devel \
+    && dnf clean all \
+    && subscription-manager unregister \
+    && cd /tmp \
+    && wget https://github.com/pgvector/pgvector/archive/refs/tags/v0.7.4.tar.gz \
+    && tar xf v0.7.4.tar.gz \
+    && cd pgvector-0.7.4 \
+    && make \
+    && make install DESTDIR=/pgvector-install
 
 # Final image — inherits troubleshooting tools, systemd hardening from ubi10-core
 FROM quay.io/crunchtools/ubi10-core:latest
