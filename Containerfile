@@ -105,7 +105,7 @@ RUN useradd -r -s /bin/false immich && \
 # Initialize PostgreSQL
 RUN mkdir -p /var/lib/pgsql/data && \
     chown -R postgres:postgres /var/lib/pgsql && \
-    sudo -u postgres /usr/bin/initdb -D /var/lib/pgsql/data
+    runuser -u postgres -- /usr/bin/initdb -D /var/lib/pgsql/data
 
 # Configure Valkey — bind to localhost only
 RUN sed -i 's/^bind .*/bind 127.0.0.1/' /etc/valkey/valkey.conf
