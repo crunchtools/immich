@@ -48,7 +48,7 @@ RUN --mount=type=secret,id=RHSM_ACTIVATION_KEY \
     && wget https://github.com/pgvector/pgvector/archive/refs/tags/v0.7.4.tar.gz \
     && tar xf v0.7.4.tar.gz \
     && cd pgvector-0.7.4 \
-    && make \
+    && make OPTFLAGS="-march=x86-64-v3" \
     && make install DESTDIR=/pgvector-install
 
 # Final image — inherits troubleshooting tools, systemd hardening from ubi10-core
