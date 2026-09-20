@@ -2,6 +2,7 @@ name: Build and Push Container Image
 
 on:
   push:
+    tags: ['v*']
     branches: [main, master]
   repository_dispatch:
     types: [parent-image-updated]
@@ -43,6 +44,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
             type=sha,prefix=
 
       - name: Build and push
@@ -104,6 +106,7 @@ jobs:
           images: ${{ env.GHCR_IMAGE }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
             type=sha,prefix=
 
       - name: Build and push container image
