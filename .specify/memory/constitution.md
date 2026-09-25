@@ -1,9 +1,9 @@
 # immich Constitution
 
-> **Version:** 1.0.0
+> **Version:** 1.0.1
 > **Ratified:** 2026-03-10
 > **Status:** Active
-> **Inherits:** [crunchtools/constitution](https://github.com/crunchtools/constitution) v1.3.0
+> **Inherits:** [crunchtools/constitution](https://github.com/crunchtools/constitution) v1.17.0
 > **Profile:** Web Application
 
 Immich photo management — all-in-one container on ubi10-core. Packages the upstream Immich application with PostgreSQL, Valkey (Redis-compatible), and ffmpeg into a single systemd-managed container using RHEL packages where possible.
