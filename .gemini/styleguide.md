@@ -26,6 +26,10 @@
 - Every database needs a TCP port check
 - Multi-service containers need monitoring for each service
 
+## Container Builds
+- Container builds go through `crunchtools/constitution/.github/workflows/container-release.yml`: build once per change, gate the digest, promote by `skopeo copy --all --preserve-digests`. Outside the repos listed in `container_release_custom` (profiles/requirements.toml), flag any job that publishes an image (`push`, `skopeo copy`, `docker/build-push-action` with push) or moves `:latest`/`:main`; a local build that is never pushed (an integration-test image) is fine. Everywhere, flag `imagetools create` and a `ghcr.io/crunchtools` reference
+- Quay.io is the only registry
+
 ## Versioning
 - Semantic Versioning 2.0.0
 - AI-assisted commits MUST include `Co-Authored-By` trailer

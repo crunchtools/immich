@@ -4,7 +4,7 @@
 > **Ratified:** 2026-03-10
 > **Amended:** 2026-10-02
 > **Status:** Active
-> **Inherits:** [crunchtools/constitution](https://github.com/crunchtools/constitution) v1.31.0
+> **Inherits:** [crunchtools/constitution](https://github.com/crunchtools/constitution) v1.39.1
 > **Profile:** Web Application
 
 Immich photo management as an all-in-one container: the upstream Immich
@@ -65,7 +65,9 @@ and Valkey on 6379, and `pg_isready`.
 ## Smoke Tests
 
 The server answers its health endpoint on 2283, and PostgreSQL accepts
-connections with the pgvector extension loaded.
+connections with the pgvector extension loaded. `tests/image/contract.sh` proves both against the gated
+digest, and the release workflow boots it under systemd with the four units
+active (`container.yml`).
 
 ## History
 

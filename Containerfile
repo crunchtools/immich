@@ -7,11 +7,11 @@ FROM ghcr.io/immich-app/immich-server:release AS immich-source
 
 # Build libvips from source — librsvg2-devel requires RHSM
 FROM registry.access.redhat.com/ubi10/ubi-init:latest AS vips-build
-RUN --mount=type=secret,id=RHSM_ACTIVATION_KEY \
-    --mount=type=secret,id=RHSM_ORG_ID \
+RUN --mount=type=secret,id=activation_key \
+    --mount=type=secret,id=org_id \
     subscription-manager register \
-      --activationkey="$(cat /run/secrets/RHSM_ACTIVATION_KEY)" \
-      --org="$(cat /run/secrets/RHSM_ORG_ID)" \
+      --activationkey="$(cat /run/secrets/activation_key)" \
+      --org="$(cat /run/secrets/org_id)" \
     && dnf install -y \
     gcc gcc-c++ make wget xz \
     meson ninja-build pkg-config \
@@ -33,11 +33,11 @@ RUN --mount=type=secret,id=RHSM_ACTIVATION_KEY \
 
 # Build pgvector 0.7.4 from source — postgresql-server-devel requires RHSM
 FROM registry.access.redhat.com/ubi10/ubi-init:latest AS pgvector-build
-RUN --mount=type=secret,id=RHSM_ACTIVATION_KEY \
-    --mount=type=secret,id=RHSM_ORG_ID \
+RUN --mount=type=secret,id=activation_key \
+    --mount=type=secret,id=org_id \
     subscription-manager register \
-      --activationkey="$(cat /run/secrets/RHSM_ACTIVATION_KEY)" \
-      --org="$(cat /run/secrets/RHSM_ORG_ID)" \
+      --activationkey="$(cat /run/secrets/activation_key)" \
+      --org="$(cat /run/secrets/org_id)" \
     && dnf install -y \
     gcc gcc-c++ make wget \
     redhat-rpm-config \
@@ -62,11 +62,11 @@ RUN dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.
     dnf install -y https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-10.noarch.rpm
 
 # postgresql-server requires RHSM
-RUN --mount=type=secret,id=RHSM_ACTIVATION_KEY \
-    --mount=type=secret,id=RHSM_ORG_ID \
+RUN --mount=type=secret,id=activation_key \
+    --mount=type=secret,id=org_id \
     subscription-manager register \
-      --activationkey="$(cat /run/secrets/RHSM_ACTIVATION_KEY)" \
-      --org="$(cat /run/secrets/RHSM_ORG_ID)" \
+      --activationkey="$(cat /run/secrets/activation_key)" \
+      --org="$(cat /run/secrets/org_id)" \
     && dnf install -y \
       postgresql-server \
       postgresql-contrib \
