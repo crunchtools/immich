@@ -22,10 +22,12 @@ jobs:
     with:
       image: quay.io/crunchtools/immich
       rhsm: true
-      boot: systemd
-      boot-units: postgresql.service valkey.service immich-db-init.service immich-server.service
-      boot-timeout: 300
-      contract-test: bash tests/image/contract.sh
+      # The image's own contract boots it under systemd and requires the four
+      # units immich needs active, /api/server/ping answering and the database
+      # extensions present. Not the generic systemd profile: polkit and
+      # rtkit-daemon fail in any container and are not part of immich.
+      boot: command
+      boot-command: bash tests/image/contract.sh
     secrets:
       QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
       QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
