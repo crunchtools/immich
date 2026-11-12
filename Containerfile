@@ -8,48 +8,52 @@ FROM ghcr.io/immich-app/immich-server:release AS immich-source
 # Build libvips from source — librsvg2-devel requires RHSM
 FROM registry.access.redhat.com/ubi10/ubi-init:latest AS vips-build
 RUN --mount=type=secret,id=activation_key \
-    --mount=type=secret,id=org_id \
-    subscription-manager register \
-      --activationkey="$(cat /run/secrets/activation_key)" \
-      --org="$(cat /run/secrets/org_id)" \
-    && dnf install -y \
+    --mount=type=secret,id=org_id <<'EOF'
+set -euo pipefail
+subscription-manager register \
+    --activationkey="$(cat /run/secrets/activation_key)" \
+    --org="$(cat /run/secrets/org_id)"
+trap 'subscription-manager unregister || true; subscription-manager clean || true' EXIT
+dnf install -y \
     gcc gcc-c++ make wget xz \
     meson ninja-build pkg-config \
     glib2-devel expat-devel \
     libjpeg-turbo-devel libpng-devel \
     libtiff-devel libwebp-devel \
     libexif-devel lcms2-devel \
-    librsvg2-devel \
-    && dnf clean all \
-    && subscription-manager unregister \
-    && cd /tmp \
-    && wget https://github.com/libvips/libvips/releases/download/v8.15.2/vips-8.15.2.tar.xz \
-    && tar xf vips-8.15.2.tar.xz \
-    && cd vips-8.15.2 \
-    && meson setup build --prefix=/usr/local --buildtype=release \
-    && cd build \
-    && ninja \
-    && ninja install
+    librsvg2-devel
+dnf clean all
+cd /tmp
+wget https://github.com/libvips/libvips/releases/download/v8.15.2/vips-8.15.2.tar.xz
+tar xf vips-8.15.2.tar.xz
+cd vips-8.15.2
+meson setup build --prefix=/usr/local --buildtype=release
+cd build
+ninja
+ninja install
+EOF
 
 # Build pgvector 0.7.4 from source — postgresql-server-devel requires RHSM
 FROM registry.access.redhat.com/ubi10/ubi-init:latest AS pgvector-build
 RUN --mount=type=secret,id=activation_key \
-    --mount=type=secret,id=org_id \
-    subscription-manager register \
-      --activationkey="$(cat /run/secrets/activation_key)" \
-      --org="$(cat /run/secrets/org_id)" \
-    && dnf install -y \
+    --mount=type=secret,id=org_id <<'EOF'
+set -euo pipefail
+subscription-manager register \
+    --activationkey="$(cat /run/secrets/activation_key)" \
+    --org="$(cat /run/secrets/org_id)"
+trap 'subscription-manager unregister || true; subscription-manager clean || true' EXIT
+dnf install -y \
     gcc gcc-c++ make wget \
     redhat-rpm-config \
-    postgresql-server-devel \
-    && dnf clean all \
-    && subscription-manager unregister \
-    && cd /tmp \
-    && wget https://github.com/pgvector/pgvector/archive/refs/tags/v0.7.4.tar.gz \
-    && tar xf v0.7.4.tar.gz \
-    && cd pgvector-0.7.4 \
-    && make OPTFLAGS="-march=x86-64-v3" \
-    && make install DESTDIR=/pgvector-install
+    postgresql-server-devel
+dnf clean all
+cd /tmp
+wget https://github.com/pgvector/pgvector/archive/refs/tags/v0.7.4.tar.gz
+tar xf v0.7.4.tar.gz
+cd pgvector-0.7.4
+make OPTFLAGS="-march=x86-64-v3"
+make install DESTDIR=/pgvector-install
+EOF
 
 # Final image — inherits troubleshooting tools, systemd hardening from ubi10-core
 FROM quay.io/crunchtools/ubi10-core:latest
@@ -63,26 +67,28 @@ RUN dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.
 
 # postgresql-server requires RHSM
 RUN --mount=type=secret,id=activation_key \
-    --mount=type=secret,id=org_id \
-    subscription-manager register \
-      --activationkey="$(cat /run/secrets/activation_key)" \
-      --org="$(cat /run/secrets/org_id)" \
-    && dnf install -y \
-      postgresql-server \
-      postgresql-contrib \
-      valkey \
-      nodejs \
-      npm \
-      sudo \
-      ca-certificates \
-      glib2 expat \
-      libjpeg-turbo libpng \
-      libtiff libwebp \
-      libexif lcms2 \
-      librsvg2 \
-      ffmpeg \
-    && dnf clean all \
-    && subscription-manager unregister
+    --mount=type=secret,id=org_id <<'EOF'
+set -euo pipefail
+subscription-manager register \
+    --activationkey="$(cat /run/secrets/activation_key)" \
+    --org="$(cat /run/secrets/org_id)"
+trap 'subscription-manager unregister || true; subscription-manager clean || true' EXIT
+dnf install -y \
+    postgresql-server \
+    postgresql-contrib \
+    valkey \
+    nodejs \
+    npm \
+    sudo \
+    ca-certificates \
+    glib2 expat \
+    libjpeg-turbo libpng \
+    libtiff libwebp \
+    libexif lcms2 \
+    librsvg2 \
+    ffmpeg
+dnf clean all
+EOF
 
 # Copy libvips from build stage
 COPY --from=vips-build /usr/local/lib64/libvips* /usr/lib64/
