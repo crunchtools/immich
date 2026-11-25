@@ -6,3 +6,10 @@ skip = ["container-build", "container-smoke", "container-scan"]
 
 [tool.sdlc]
 repo-kinds = ["web-application"]
+
+[tool.sdlc.image]
+# Written by crunchtools/sdlc's scripts/convert_repo.py: moved from the workflows.
+image = "quay.io/crunchtools/immich"
+rhsm = true
+boot = "command"
+boot-command = "bash tests/image/contract.sh"
